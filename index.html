@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Task Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        .bg-img {
+            background-image: url('./img/newbg.jpg');
+            background-size: center/cover no-repeat;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100%;
+        }
+/* ye card css hai */
+        .card {
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 5px 15px rgba(83, 67, 251, 0.932);
+        }
+
+/* ye college name css hai */
+
+        .box {
+            margin-top: 8px;
+            width: 100%;
+            height: 20vmin;
+            display: grid;
+            place-content: center;
+            color: rgb(231, 251, 104);
+            text-shadow: 0 1px 0 #000;
+            --border-angle: 0turn;
+            border: solid 10px transparent;
+            border-radius: 2em;
+            --gradient-border: conic-gradient(from var(--border-angle), transparent 25%, #08f, #f03 99%, transparent);
+            --main-bg: conic-gradient(from var(--border-angle), #213, #112 5%, #112 60%, #213 95%);
+            background: var(--main-bg) padding-box,
+            var(--gradient-border) border-box,
+            var(--main-bg) border-box;
+            background-position: center center;
+            animation: bg-spin 3s linear infinite;
+        }
+
+        .box:hover {
+            animation-play-state: paused;
+        }
+
+        @property --border-angle {
+            syntax: "<angle>";
+            inherits: true;
+            initial-value: 0turn;
+        }
+
+        @keyframes bg-spin {
+            to {
+                --border-angle: 1turn;
+            }
+        }
+        .btn{
+            margin-left: 10px;
+        }
+
+        .card-title{
+            background-color: #000;
+            color: gold;
+        }
+        .card-body{
+            background-color: rgb(216, 215, 249);
+            border: 2px solid red;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body class="bg-img text-white align-items-center justify-content-center" style="height: 100vh;">
+    <div class="container py-5">
+        <div class="box">
+            <h1 class="text-center mb-4">ShriRam University, India</h1>
+            <p>जीवन में बगैर ज्ञान को हासिल किए कोई भी व्यक्ति किसी भी क्षेत्र में सफलता नहीं हासिल कर सकता है. ज्ञान के
+                बगैर इंसान का जीवन अधूरा है</p>
+        </div>
+
+        <h2 class="text-center mb-4">📋 Student Card</h2>
+
+        <div class="text-end mb-3">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#taskModal">Add Student</button>
+            <button class="btn btn-danger ms-2" id="exportPdfBtn">Export to PDF</button>
+        </div>
+
+        <div class="mb-3">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by Student Name...">
+        </div>
+
+        <div id="taskList" class="row g-3"></div>
+    </div>
+
+    <div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="taskModalLabel">New Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <!--ye img code hai hero -->
+                <div class="modal-body">
+                    <input type="file" id="imageInput" accept="image/*">
+                </div>
+                <div class="modal-body"><input type="text" id="Input1" class="form-control"
+                        placeholder="Enter Student Name"></div>
+                <div class="modal-body"><input type="text" id="Input2" class="form-control"
+                        placeholder="Enter Father Name"></div>
+                <div class="modal-body"><input type="text" id="Input3" class="form-control"
+                        placeholder="Enter Your DOB"></div>
+                <div class="modal-body"><input type="text" id="Input4" class="form-control"
+                        placeholder="Enter Course Name"></div>
+                <div class="modal-body"><input type="text" id="Input5" class="form-control"
+                        placeholder="Enter Branch Name"></div>
+                <div class="modal-body"><input type="text" id="Input6" class="form-control"
+                        placeholder="Enter Student Roll No."></div>
+                <div class="modal-body"><input type="text" id="Input7" class="form-control"
+                        placeholder="Enter Admission Year"></div>
+                <div class="modal-footer"><button type="button" id="addTaskBtn" class="btn btn-success">Add
+                        Student</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedImage = '';
+        const input = document.getElementById('imageInput');
+
+        input.addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    uploadedImage = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const addTaskBtn = document.getElementById('addTaskBtn');
+            const taskList = document.getElementById('taskList');
+            const studentData = JSON.parse(localStorage.getItem('students')) || [];
+
+            studentData.forEach(data => createTaskCard(data.name, data.father, data.dob, data.course, data.branch, data.roll, data.year, data.image));
+
+            addTaskBtn.addEventListener('click', () => {
+                const name = Input1.value.trim();
+                const father = Input2.value.trim();
+                const dob = Input3.value.trim();
+                const course = Input4.value.trim();
+                const branch = Input5.value.trim();
+                const roll = Input6.value.trim();
+                const year = Input7.value.trim();
+
+                if (!name || !father || !dob || !course || !branch || !roll || !year) {
+                    alert("All fields are required!");
+                    return;
+                }
+
+                const student = { name, father, dob, course, branch, roll, year, image: uploadedImage };
+                studentData.push(student);
+                localStorage.setItem('students', JSON.stringify(studentData));
+
+                createTaskCard(name, father, dob, course, branch, roll, year, uploadedImage);
+
+                Input1.value = Input2.value = Input3.value = Input4.value = Input5.value = Input6.value = Input7.value = '';
+                imageInput.value = '';
+                uploadedImage = '';
+
+                bootstrap.Modal.getInstance(document.getElementById('taskModal')).hide();
+            });
+
+            document.getElementById('searchInput').addEventListener('input', function () {
+                const query = this.value.toLowerCase();
+                document.querySelectorAll('#taskList .card').forEach(card => {
+                    const name = card.querySelector('.card-title').textContent.toLowerCase();
+                    card.parentElement.style.display = name.includes(query) ? 'block' : 'none';
+                });
+            });
+
+            document.getElementById('exportPdfBtn').addEventListener('click', () => {
+                const element = document.getElementById('taskList');
+                html2pdf().from(element).set({
+                    margin: 0.5,
+                    filename: 'Student_List.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                }).save();
+            });
+
+            function createTaskCard(name, father, dob, course, branch, roll, year, image) {
+                const col = document.createElement('div');
+                col.className = 'col-md-4';
+
+                const card = document.createElement('div');
+                card.className = 'card shadow-sm';
+                const cardBody = document.createElement('div');
+                cardBody.className = 'card-body';
+                
+
+                const test = document.createElement('h4');
+                test.className = 'card-title p-3 mb-2';
+                test.innerHTML = `<center><strong>ShriRam University</strong></center>`;
+                
+
+
+                const title = document.createElement('h5');
+                title.className = 'card-title';
+                title.innerHTML = `<center><strong>${name}</strong></center>`;
+
+                const img = document.createElement('img');
+                img.src = image || 'https://via.placeholder.com/150';
+                img.alt = "Student Image";
+                img.style.width = '200px';
+                img.style.height = '150px';
+                img.className = 'mb-2 rounded rounded-circle mx-auto d-block';
+                
+
+                const details = document.createElement('p');
+                details.className = 'card-text';
+                details.innerHTML = `<b>FATHER'S NAME : </b>${father}<br><b>DATE OF BIRTH : </b>${dob}<br><b>COURSE : </b>${course}<br><b>BRANCH : </b>${branch}<br><b>ROLL NO. : </b>${roll}<br><b>ADMISSION YEAR : </b>${year}`;
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'btn btn-danger btn-sm';
+                delBtn.textContent = '🗑️ Delete';
+                delBtn.addEventListener('click', () => {
+                    taskList.removeChild(col);
+                    const index = studentData.findIndex(s => s.roll === roll);
+                    if (index !== -1) {
+                        studentData.splice(index, 1);
+                        localStorage.setItem('students', JSON.stringify(studentData));
+                    }
+                });
+
+                const appBtn = document.createElement('button');
+                appBtn.className = 'btn btn-success btn-sm';
+                appBtn.textContent = 'Student Verify ✅ Approved';
+                
+
+                cardBody.appendChild(test);
+                cardBody.appendChild(img);
+                cardBody.appendChild(title);
+                cardBody.appendChild(details);
+                cardBody.appendChild(appBtn);
+                cardBody.appendChild(delBtn);
+                card.appendChild(cardBody);
+                col.appendChild(card);
+                taskList.appendChild(col);
+            }
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
